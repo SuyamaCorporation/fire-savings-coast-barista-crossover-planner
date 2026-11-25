@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIRE段階別 Coast/Barista FIRE 資産残高プランナー</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+  <header class="bg-indigo-700 text-white py-6 px-4 shadow-md">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-2xl font-bold">FIRE段階別プランナー</h1>
+      <p class="text-indigo-200 text-sm mt-1">Full FIRE・Coast FIRE・Barista FIRE の達成時期を比較</p>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Input Section -->
+    <section aria-label="入力フォーム" class="bg-white rounded-2xl shadow p-6 mb-8">
+      <h2 class="text-lg font-semibold mb-4 text-indigo-700">基本情報の入力</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <label for="currentAge" class="block text-sm font-medium text-gray-700 mb-1">現在の年齢（歳）</label>
+          <input id="currentAge" type="number" min="18" max="80" value="30"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="retirementAge" class="block text-sm font-medium text-gray-700 mb-1">目標リタイア年齢（歳）</label>
+          <input id="retirementAge" type="number" min="20" max="90" value="55"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="currentSavings" class="block text-sm font-medium text-gray-700 mb-1">現在の資産額（万円）</label>
+          <input id="currentSavings" type="number" min="0" value="300"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="monthlyContribution" class="block text-sm font-medium text-gray-700 mb-1">月間積立額（万円）</label>
+          <input id="monthlyContribution" type="number" min="0" step="0.5" value="10"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="annualReturn" class="block text-sm font-medium text-gray-700 mb-1">期待年利（%）</label>
+          <input id="annualReturn" type="number" min="0" max="30" step="0.1" value="5"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="annualExpenses" class="block text-sm font-medium text-gray-700 mb-1">老後年間生活費（万円）</label>
+          <input id="annualExpenses" type="number" min="0" value="300"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+        <div>
+          <label for="baristaExpenses" class="block text-sm font-medium text-gray-700 mb-1">Barista FIRE 年間生活費（万円）<span class="text-xs text-gray-500 ml-1">※パート収入後</span></label>
+          <input id="baristaExpenses" type="number" min="0" value="180"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+            aria-required="true" />
+        </div>
+      </div>
+      <button id="calcBtn"
+        class="mt-6 w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl transition focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+        aria-label="計算を実行">
+        計算する
+      </button>
+    </section>
+
+    <!-- Results Section -->
+    <div id="resultsArea" class="hidden">
+      <!-- FIRE Targets -->
+      <section aria-label="FIRE目標額" class="bg-white rounded-2xl shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-indigo-700">FIRE 目標額</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-indigo-50 rounded-xl p-4 text-center">
+            <p class="text-xs text-indigo-500 font-medium uppercase tracking-wide">Full FIRE</p>
+            <p class="text-2xl font-bold text-indigo-700 mt-1" id="fullFireTarget">-</p>
+            <p class="text-xs text-gray-500 mt-1">年間支出の25倍</p>
+          </div>
+          <div class="bg-teal-50 rounded-xl p-4 text-center">
+            <p class="text-xs text-teal-500 font-medium uppercase tracking-wide">Coast FIRE</p>
+            <p class="text-2xl font-bold text-teal-700 mt-1" id="coastFireTarget">-</p>
+            <p class="text-xs text-gray-500 mt-1">積立なしで目標達成</p>
+          </div>
+          <div class="bg-orange-50 rounded-xl p-4 text-center">
+            <p class="text-xs text-orange-500 font-medium uppercase tracking-wide">Barista FIRE</p>
+            <p class="text-2xl font-bold text-orange-700 mt-1" id="baristaFireTarget">-</p>
+            <p class="text-xs text-gray-500 mt-1">削減後支出の25倍</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Table -->
+      <section aria-label="結果比較表" class="bg-white rounded-2xl shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-indigo-700">クロスオーバーポイント比較</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" role="table">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="text-left px-4 py-2 rounded-tl-lg" scope="col">戦略</th>
+                <th class="text-right px-4 py-2" scope="col">達成年齢</th>
+                <th class="text-right px-4 py-2" scope="col">達成時資産</th>
+                <th class="text-right px-4 py-2 rounded-tr-lg" scope="col">残り年数</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SVG Chart -->
+      <section aria-label="資産推移チャート" class="bg-white rounded-2xl shadow p-6 mb-6">
+        <h2 class="text-lg font-semibold mb-4 text-indigo-700">資産推移チャート</h2>
+        <div class="overflow-x-auto" role="img" aria-label="年齢別資産残高の棒グラフ">
+          <svg id="chart" width="100%" viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg"
+            style="min-width:360px">
+          </svg>
+        </div>
+        <!-- Legend -->
+        <div class="flex flex-wrap gap-4 mt-3 text-xs">
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-indigo-500"></span> 資産推移</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-indigo-300"></span> Full FIRE 目標</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-teal-400"></span> Coast FIRE 目標</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-orange-400"></span> Barista FIRE 目標</span>
+        </div>
+      </section>
+
+      <!-- Year-by-Year Table -->
+      <section aria-label="年別詳細" class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-lg font-semibold mb-4 text-indigo-700">年別 資産推移表</h2>
+        <div class="overflow-x-auto max-h-72 overflow-y-auto">
+          <table class="w-full text-sm" role="table">
+            <thead class="sticky top-0 bg-white">
+              <tr class="bg-gray-100">
+                <th class="text-left px-3 py-2" scope="col">年齢</th>
+                <th class="text-right px-3 py-2" scope="col">資産（万円）</th>
+                <th class="text-right px-3 py-2" scope="col">Full FIRE</th>
+                <th class="text-right px-3 py-2" scope="col">Coast FIRE</th>
+                <th class="text-right px-3 py-2" scope="col">Barista FIRE</th>
+              </tr>
+            </thead>
+            <tbody id="yearlyTableBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="text-center text-xs text-gray-400 py-6">
+    ※計算は概算です。税制・実際の運用成果は異なります。投資は自己責任で行ってください。
+  </footer>
+
+  <script>
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    const STORAGE_KEY = 'fire_planner_v1';
+
+    function loadFromStorage() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (data.currentAge) document.getElementById('currentAge').value = data.currentAge;
+        if (data.retirementAge) document.getElementById('retirementAge').value = data.retirementAge;
+        if (data.currentSavings !== undefined) document.getElementById('currentSavings').value = data.currentSavings;
+        if (data.monthlyContribution !== undefined) document.getElementById('monthlyContribution').value = data.monthlyContribution;
+        if (data.annualReturn !== undefined) document.getElementById('annualReturn').value = data.annualReturn;
+        if (data.annualExpenses !== undefined) document.getElementById('annualExpenses').value = data.annualExpenses;
+        if (data.baristaExpenses !== undefined) document.getElementById('baristaExpenses').value = data.baristaExpenses;
+      } catch (e) {}
+    }
+
+    function saveToStorage() {
+      const data = {
+        currentAge: document.getElementById('currentAge').value,
+        retirementAge: document.getElementById('retirementAge').value,
+        currentSavings: document.getElementById('currentSavings').value,
+        monthlyContribution: document.getElementById('monthlyContribution').value,
+        annualReturn: document.getElementById('annualReturn').value,
+        annualExpenses: document.getElementById('annualExpenses').value,
+        baristaExpenses: document.getElementById('baristaExpenses').value,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function fmt(n) {
+      return Math.round(n).toLocaleString('ja-JP') + ' 万円';
+    }
+
+    function calculate() {
+      const currentAge = parseInt(document.getElementById('currentAge').value);
+      const retirementAge = parseInt(document.getElementById('retirementAge').value);
+      const currentSavings = parseFloat(document.getElementById('currentSavings').value);
+      const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value);
+      const annualReturn = parseFloat(document.getElementById('annualReturn').value) / 100;
+      const annualExpenses = parseFloat(document.getElementById('annualExpenses').value);
+      const baristaExpenses = parseFloat(document.getElementById('baristaExpenses').value);
+
+      if (isNaN(currentAge) || isNaN(retirementAge) || isNaN(currentSavings) ||
+          isNaN(monthlyContribution) || isNaN(annualReturn) || isNaN(annualExpenses) ||
+          isNaN(baristaExpenses) || retirementAge <= currentAge) {
+        alert('入力値を確認してください。リタイア年齢は現在の年齢より大きくしてください。');
+        return;
+      }
+
+      saveToStorage();
+
+      const fullFireTarget = annualExpenses * 25;
+      const baristaFireTarget = baristaExpenses * 25;
+      const yearsToRetirement = retirementAge - currentAge;
+
+      // Coast FIRE: amount now that grows to fullFireTarget by retirementAge without contributions
+      const coastFireTarget = fullFireTarget / Math.pow(1 + annualReturn, yearsToRetirement);
+
+      document.getElementById('fullFireTarget').textContent = fmt(fullFireTarget);
+      document.getElementById('coastFireTarget').textContent = fmt(coastFireTarget);
+      document.getElementById('baristaFireTarget').textContent = fmt(baristaFireTarget);
+
+      // Build yearly data up to max(retirementAge + 10, age when full fire achieved)
+      const monthlyReturn = annualReturn / 12;
+      const monthlyContribManse = monthlyContribution; // already in 万円
+
+      let savings = currentSavings;
+      const yearlyData = [];
+      let fullFireAge = null, coastFireAge = null, baristaFireAge = null;
+
+      const maxAge = Math.min(retirementAge + 20, 90);
+
+      for (let age = currentAge; age <= maxAge; age++) {
+        const yearsFromNow = age - currentAge;
+
+        // Compound savings with monthly contributions
+        // FV = PV*(1+r)^n + PMT * ((1+r)^n - 1)/r  (annual)
+        const r = annualReturn;
+        const n = yearsFromNow;
+        let fv;
+        if (r === 0) {
+          fv = currentSavings + monthlyContribManse * 12 * n;
+        } else {
+          fv = currentSavings * Math.pow(1 + r, n) +
+               monthlyContribManse * 12 * (Math.pow(1 + r, n) - 1) / r;
+        }
+
+        // Coast FIRE projection: once coast fire is hit, stop contributions
+        const coastFvNoContrib = currentSavings * Math.pow(1 + r, n);
+
+        yearlyData.push({ age, fv, coastFvNoContrib });
+
+        if (fullFireAge === null && fv >= fullFireTarget) fullFireAge = age;
+        if (coastFireAge === null && fv >= coastFireTarget) coastFireAge = age;
+        if (baristaFireAge === null && fv >= baristaFireTarget) baristaFireAge = age;
+      }
+
+      // Results table
+      const tbody = document.getElementById('resultsTableBody');
+      tbody.innerHTML = '';  // xss-ok: reviewed-internal-data
+      const strategies = [
+        { name: 'Full FIRE', target: fullFireTarget, age: fullFireAge, color: 'indigo' },
+        { name: 'Coast FIRE', target: coastFireTarget, age: coastFireAge, color: 'teal' },
+        { name: 'Barista FIRE', target: baristaFireTarget, age: baristaFireAge, color: 'orange' },
+      ];
+
+      strategies.forEach(s => {
+        const achievedData = yearlyData.find(d => d.age === s.age);
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        const ageStr = s.age ? `${s.age}歳` : '計算期間内未達';
+        const assetStr = achievedData ? fmt(achievedData.fv) : '-';
+        const remaining = s.age ? (s.age - currentAge) : '-';
+        tr.innerHTML = `<td class="px-4 py-3 font-medium text-${s.color}-700">${s.name}</td><td class="px-4 py-3 text-right">${ageStr}</td><td class="px-4 py-3 text-right">${assetStr}</td><td class="px-4 py-3 text-right">${remaining !== '-' ? remaining + '年' : '-'}</td>`; // xss-ok: internal constant (s.color, s.name); computed (ageStr, assetStr, remaining)
+        tbody.appendChild(tr);
+      });
+
+      // Yearly table
+      const ytbody = document.getElementById('yearlyTableBody');
+      ytbody.innerHTML = '';  // xss-ok: reviewed-internal-data
+      yearlyData.forEach(d => {
+        const tr = document.createElement('tr');
+        const isFullFire = d.fv >= fullFireTarget;
+        const isCoast = d.fv >= coastFireTarget;
+        const isBarista = d.fv >= baristaFireTarget;
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50 text-xs';
+        tr.innerHTML = `<td class="px-3 py-2">${d.age}歳</td><td class="px-3 py-2 text-right font-mono">${Math.round(d.fv).toLocaleString()}</td><td class="px-3 py-2 text-right">${isFullFire ? '✅' : '—'}</td><td class="px-3 py-2 text-right">${isCoast ? '✅' : '—'}</td><td class="px-3 py-2 text-right">${isBarista ? '✅' : '—'}</td>`; // xss-ok: computed (d.age, Math.round(d.fv))
+        ytbody.appendChild(tr);
+      });
+
+      // SVG Chart
+      drawChart(yearlyData, fullFireTarget, coastFireTarget, baristaFireTarget, currentAge);
+
+      document.getElementById('resultsArea').classList.remove('hidden');
+    }
+
+    function drawChart(data, fullTarget, coastTarget, baristaTarget, currentAge) {
+      const svg = document.getElementById('chart');
+      svg.innerHTML = '';  // xss-ok: reviewed-internal-data
+
+      const W = 760, H = 320;
+      const marginLeft = 70, marginRight = 20, marginTop = 20, marginBottom = 40;
+      const plotW = W - marginLeft - marginRight;
+      const plotH = H - marginTop - marginBottom;
+
+      const maxVal = Math.max(...data.map(d => d.fv), fullTarget) * 1.05;
+      const minVal = 0;
+
+      function xPos(i) { return marginLeft + (i / (data.length - 1)) * plotW; }
+      function yPos(v) { return marginTop + plotH - ((v - minVal) / (maxVal - minVal)) * plotH; }
+
+      // Grid lines
+      for (let i = 0; i <= 5; i++) {
+        const y = marginTop + (i / 5) * plotH;
+        const val = maxVal * (1 - i / 5);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', marginLeft); line.setAttribute('x2', W - marginRight);
+        line.setAttribute('y1', y); line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#e5e7eb'); line.setAttribute('stroke-width', '1');
+        svg.appendChild(line);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', marginLeft - 6); text.setAttribute('y', y + 4);
+        text.setAttribute('text-anchor', 'end'); text.setAttribute('font-size', '10');
+        text.setAttribute('fill', '#9ca3af');
+        text.textContent = Math.round(val / 100) + 'M';
+        svg.appendChild(text);
+      }
+
+      // Target lines
+      function drawTargetLine(val, color, label) {
+        const y = yPos(val);
+        if (y < marginTop || y > marginTop + plotH) return;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', marginLeft); line.setAttribute('x2', W - marginRight);
+        line.setAttribute('y1', y); line.setAttribute('y2', y);
+        line.setAttribute('stroke', color); line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '5,4');
+        svg.appendChild(line);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', W - marginRight - 2); text.setAttribute('y', y - 3);
+        text.setAttribute('text-anchor', 'end'); text.setAttribute('font-size', '9');
+        text.setAttribute('fill', color);
+        text.textContent = label;
+        svg.appendChild(text);
+      }
+
+      drawTargetLine(fullTarget, '#818cf8', 'Full FIRE');
+      drawTargetLine(coastTarget, '#2dd4bf', 'Coast FIRE');
+      drawTargetLine(baristaTarget, '#fb923c', 'Barista FIRE');
+
+      // Bars
+      const barW = Math.max(2, plotW / data.length - 2);
+      data.forEach((d, i) => {
+        const x = marginLeft + (i / data.length) * plotW;
+        const y = yPos(d.fv);
+        const h = yPos(0) - y;
+
+        const isFullFire = d.fv >= fullTarget;
+        const fill = isFullFire ? '#6366f1' : (d.fv >= coastTarget ? '#14b8a6' : '#a5b4fc');
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', y);
+        rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(h, 0));
+        rect.setAttribute('fill', fill); rect.setAttribute('rx', '1');
+        svg.appendChild(rect);
+
+        // X axis label (every 5 years)
+        if ((d.age - currentAge) % 5 === 0) {
+          const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          label.setAttribute('x', x + barW / 2); label.setAttribute('y', H - marginBottom + 15);
+          label.setAttribute('text-anchor', 'middle'); label.setAttribute('font-size', '10');
+          label.setAttribute('fill', '#6b7280');
+          label.textContent = d.age;
+          svg.appendChild(label);
+        }
+      });
+
+      // X axis line
+      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      xAxis.setAttribute('x1', marginLeft); xAxis.setAttribute('x2', W - marginRight);
+      xAxis.setAttribute('y1', yPos(0)); xAxis.setAttribute('y2', yPos(0));
+      xAxis.setAttribute('stroke', '#d1d5db'); xAxis.setAttribute('stroke-width', '1');
+      svg.appendChild(xAxis);
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') calculate();
+      });
+    });
+
+    loadFromStorage();
+    calculate();
+  </script>
+</body>
+</html>
